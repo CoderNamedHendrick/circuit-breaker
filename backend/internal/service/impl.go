@@ -1,130 +1,277 @@
 package service
 
 import (
+	"backend/data"
 	"backend/internal/entity"
 	"fmt"
-	"time"
+
+	"github.com/google/uuid"
 )
 
 type circuitServiceImpl struct {
-	// TODO: Add dependencies (repository, database, etc.)
+	repo data.CircuitRepository
 }
 
-func NewCircuitService() CircuitService {
-	return &circuitServiceImpl{}
+func NewCircuitService(repo data.CircuitRepository) CircuitService {
+	return &circuitServiceImpl{repo}
 }
 
 // Circuit operations
 func (s *circuitServiceImpl) CreateCircuit(title string) (*entity.Circuit, error) {
-	// TODO: Implement circuit creation
-	return &entity.Circuit{
-		ID:    fmt.Sprintf("circuit_%d", time.Now().UnixNano()),
+	if title == "" {
+		return nil, fmt.Errorf("circuit title cannot be empty")
+	}
+
+	circuit := &entity.Circuit{
+		ID:    uuid.New().String(),
 		Title: title,
 		Nodes: []entity.Node{},
 		Edges: []*entity.Edge{},
-	}, nil
+	}
+
+	if err := s.repo.CreateCircuit(circuit); err != nil {
+		return nil, fmt.Errorf("failed to create circuit: %w", err)
+	}
+
+	return circuit, nil
 }
 
 func (s *circuitServiceImpl) GetCircuit(id string) (*entity.Circuit, error) {
-	// TODO: Implement circuit retrieval
-	return &entity.Circuit{
-		ID:    id,
-		Title: "Sample Circuit",
-		Nodes: []entity.Node{},
-		Edges: []*entity.Edge{},
-	}, nil
+	if id == "" {
+		return nil, fmt.Errorf("circuit ID cannot be empty")
+	}
+
+	circuit, err := s.repo.GetCircuit(id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get circuit: %w", err)
+	}
+
+	return circuit, nil
 }
 
 func (s *circuitServiceImpl) GetAllCircuits() ([]*entity.Circuit, error) {
-	// TODO: Implement get all circuits
-	return []*entity.Circuit{
-		{
-			ID:    "sample-1",
-			Title: "Sample Circuit",
-			Nodes: []entity.Node{
-				&entity.InputNode{
-					ID:    "input-1",
-					Title: "x",
-				},
-			},
-			Edges: []*entity.Edge{},
-		},
-		{
-			ID:    "sample-2",
-			Title: "Sample Circuit",
-			Nodes: []entity.Node{},
-			Edges: []*entity.Edge{},
-		},
-	}, nil
+	circuits, err := s.repo.GetAllCircuits()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get all circuits: %w", err)
+	}
+
+	return circuits, nil
 }
 
 // Node operations
 func (s *circuitServiceImpl) CreateInputNode(circuitID string, title string) (*entity.InputNode, error) {
-	// TODO: Implement input node creation
-	return &entity.InputNode{
-		ID:    fmt.Sprintf("input_%d", time.Now().UnixNano()),
+	if circuitID == "" {
+		return nil, fmt.Errorf("circuit ID cannot be empty")
+	}
+
+	// Create the new input node
+	inputNode := &entity.InputNode{
+		ID:    uuid.New().String(),
 		Title: title,
-	}, nil
+	}
+
+	// Update the circuit in the database
+	if err := s.repo.AddNode(circuitID, inputNode); err != nil {
+		return nil, fmt.Errorf("failed to update circuit with new input node: %w", err)
+	}
+
+	return inputNode, nil
 }
 
 func (s *circuitServiceImpl) CreateOutputNode(circuitID string, title string) (*entity.OutputNode, error) {
-	// TODO: Implement output node creation
-	return &entity.OutputNode{
-		ID:    fmt.Sprintf("output_%d", time.Now().UnixNano()),
+	if circuitID == "" {
+		return nil, fmt.Errorf("circuit ID cannot be empty")
+	}
+
+	// Create the new output node
+	outputNode := &entity.OutputNode{
+		ID:    uuid.New().String(),
 		Title: title,
-	}, nil
+	}
+
+	// Update the circuit in the database
+	if err := s.repo.AddNode(circuitID, outputNode); err != nil {
+		return nil, fmt.Errorf("failed to update circuit with new output node: %w", err)
+	}
+
+	return outputNode, nil
 }
 
 func (s *circuitServiceImpl) CreateAndNode(circuitID string) (*entity.AndNode, error) {
-	// TODO: Implement AND node creation
-	return &entity.AndNode{
-		ID: fmt.Sprintf("and_%d", time.Now().UnixNano()),
-	}, nil
+	if circuitID == "" {
+		return nil, fmt.Errorf("circuit ID cannot be empty")
+	}
+
+	// Create the new AND node
+	andNode := &entity.AndNode{
+		ID: uuid.New().String(),
+	}
+
+	// Update the circuit in the database
+	if err := s.repo.AddNode(circuitID, andNode); err != nil {
+		return nil, fmt.Errorf("failed to update circuit with new AND node: %w", err)
+	}
+
+	return andNode, nil
 }
 
 func (s *circuitServiceImpl) CreateOrNode(circuitID string) (*entity.OrNode, error) {
-	// TODO: Implement OR node creation
-	return &entity.OrNode{
-		ID: fmt.Sprintf("or_%d", time.Now().UnixNano()),
-	}, nil
+	if circuitID == "" {
+		return nil, fmt.Errorf("circuit ID cannot be empty")
+	}
+
+	// Create the new OR node
+	orNode := &entity.OrNode{
+		ID: uuid.New().String(),
+	}
+
+	// Update the circuit in the database
+	if err := s.repo.AddNode(circuitID, orNode); err != nil {
+		return nil, fmt.Errorf("failed to update circuit with new OR node: %w", err)
+	}
+
+	return orNode, nil
 }
 
 func (s *circuitServiceImpl) CreateNotNode(circuitID string) (*entity.NotNode, error) {
-	// TODO: Implement NOT node creation
-	return &entity.NotNode{
-		ID: fmt.Sprintf("not_%d", time.Now().UnixNano()),
-	}, nil
+	if circuitID == "" {
+		return nil, fmt.Errorf("circuit ID cannot be empty")
+	}
+
+	// Create the new NOT node
+	notNode := &entity.NotNode{
+		ID: uuid.New().String(),
+	}
+
+	// Update the circuit in the database
+	if err := s.repo.AddNode(circuitID, notNode); err != nil {
+		return nil, fmt.Errorf("failed to update circuit with new NOT node: %w", err)
+	}
+
+	return notNode, nil
 }
 
 func (s *circuitServiceImpl) CreateCircuitNode(circuitID string, referencedCircuitID string) (*entity.CircuitNode, error) {
-	// TODO: Implement circuit node creation
-	return &entity.CircuitNode{
-		ID: fmt.Sprintf("circuit_node_%d", time.Now().UnixNano()),
-		Circuit: &entity.Circuit{
-			ID:    referencedCircuitID,
-			Title: "Referenced Circuit",
-			Nodes: []entity.Node{},
-			Edges: []*entity.Edge{},
-		},
-	}, nil
+	if circuitID == "" {
+		return nil, fmt.Errorf("circuit ID cannot be empty")
+	}
+	if referencedCircuitID == "" {
+		return nil, fmt.Errorf("referenced circuit ID cannot be empty")
+	}
+
+	// Verify the referenced circuit exists
+	referencedCircuit, err := s.repo.GetCircuit(referencedCircuitID)
+	if err != nil {
+		return nil, fmt.Errorf("referenced circuit not found: %w", err)
+	}
+
+	// Create the new circuit node
+	circuitNode := &entity.CircuitNode{
+		ID:      uuid.New().String(),
+		Circuit: referencedCircuit,
+	}
+
+	// Update the circuit in the database
+	if err := s.repo.AddNode(circuitID, circuitNode); err != nil {
+		return nil, fmt.Errorf("failed to update circuit with new circuit node: %w", err)
+	}
+
+	return circuitNode, nil
 }
 
 // Edge operations
 func (s *circuitServiceImpl) CreateEdge(circuitID string, sourceNodeID string, targetNodeID string) (*entity.Edge, error) {
-	// TODO: Implement edge creation
-	return &entity.Edge{
-		ID:           fmt.Sprintf("edge_%d", time.Now().UnixNano()),
+	if circuitID == "" {
+		return nil, fmt.Errorf("circuit ID cannot be empty")
+	}
+	if sourceNodeID == "" {
+		return nil, fmt.Errorf("source node ID cannot be empty")
+	}
+	if targetNodeID == "" {
+		return nil, fmt.Errorf("target node ID cannot be empty")
+	}
+	if sourceNodeID == targetNodeID {
+		return nil, fmt.Errorf("source and target nodes cannot be the same")
+	}
+
+	// Get the existing circuit
+	circuit, err := s.repo.GetCircuit(circuitID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get circuit: %w", err)
+	}
+
+	// Verify both nodes exist in the circuit
+	var sourceExists, targetExists bool
+	for _, node := range circuit.Nodes {
+		if node.GetID() == sourceNodeID {
+			sourceExists = true
+		}
+		if node.GetID() == targetNodeID {
+			targetExists = true
+		}
+	}
+
+	if !sourceExists {
+		return nil, fmt.Errorf("source node %s not found in circuit", sourceNodeID)
+	}
+	if !targetExists {
+		return nil, fmt.Errorf("target node %s not found in circuit", targetNodeID)
+	}
+
+	// Check if edge already exists
+	for _, edge := range circuit.Edges {
+		if edge.SourceNodeID == sourceNodeID && edge.TargetNodeID == targetNodeID {
+			return nil, fmt.Errorf("edge already exists between nodes %s and %s", sourceNodeID, targetNodeID)
+		}
+	}
+
+	// Create the new edge
+	newEdge := &entity.Edge{
+		ID:           uuid.New().String(),
 		SourceNodeID: sourceNodeID,
 		TargetNodeID: targetNodeID,
-	}, nil
+	}
+
+	// Update the circuit in the database
+	if err := s.repo.AddEdge(circuitID, newEdge); err != nil {
+		return nil, fmt.Errorf("failed to update circuit with new edge: %w", err)
+	}
+
+	return newEdge, nil
 }
 
 // Evaluation operations
 func (s *circuitServiceImpl) EvaluateCircuit(circuit *entity.Circuit, inputs []*entity.InputNodeValue) (*entity.EvaluationResult, error) {
-	// TODO: Implement circuit evaluation logic
-	return &entity.EvaluationResult{
-		Success: true,
-		Outputs: []*entity.NodeOutput{},
-		Error:   "",
-	}, nil
+	if circuit == nil {
+		return &entity.EvaluationResult{
+			Success: false,
+			Error:   "circuit cannot be nil",
+		}, fmt.Errorf("circuit cannot be nil")
+	}
+
+	if inputs == nil {
+		return &entity.EvaluationResult{
+			Success: false,
+			Error:   "inputs cannot be nil",
+		}, fmt.Errorf("inputs cannot be nil")
+	}
+
+	// Validate the circuit structure before evaluation
+	if err := circuit.ValidateCircuit(); err != nil {
+		return &entity.EvaluationResult{
+			Success: false,
+			Error:   fmt.Sprintf("circuit validation failed: %v", err),
+		}, fmt.Errorf("circuit validation failed: %w", err)
+	}
+
+	// Use the evaluation engine to evaluate the circuit
+	result, err := circuit.EvaluateCircuit(inputs)
+	if err != nil {
+		return &entity.EvaluationResult{
+			Success: false,
+			Error:   err.Error(),
+		}, err
+	}
+
+	return result, nil
 }

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"backend/data"
+	_ "backend/data"
 	"backend/graph"
 	"backend/internal/service"
 	"log"
@@ -24,7 +26,7 @@ func main() {
 	}
 
 	resolver := &graph.Resolver{
-		CircuitService: service.NewCircuitService(),
+		CircuitService: service.NewCircuitService(data.SqlCircuitRepository()),
 	}
 	srv := createServer(resolver)
 
